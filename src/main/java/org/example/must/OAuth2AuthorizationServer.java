@@ -12,43 +12,43 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 
 @Configuration
 @EnableAuthorizationServer
-class OAuth2AuthServerConfiguration extends AuthorizationServerConfigurerAdapter {
+public class OAuth2AuthorizationServer extends AuthorizationServerConfigurerAdapter
+{
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    public OAuth2AuthServerConfiguration(AuthenticationManager authenticationManager, BCryptPasswordEncoder passwordEncoder) {
+    public OAuth2AuthorizationServer(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-        oauthServer.tokenKeyAccess("permitAll()")
-                .checkTokenAccess("isAuthenticated()");
+    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+        security
+                .tokenKeyAccess("permitAll()")
+                .checkTokenAccess("isAuthenticated()")
+                .allowFormAuthenticationForClients();
     }
 
+    @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-
-        String clientID ="clientapp";
-
-        String clientSecret="123456";
-
-        int accessTokenValidity=700;
-
         clients
                 .inMemory()
-                .withClient(clientID)
-                .secret(passwordEncoder.encode(clientSecret))
-                .authorizedGrantTypes("password")
-                .scopes("read", "write")
-                .accessTokenValiditySeconds(accessTokenValidity);
+                .withClient("clientapp")
+                .secret(passwordEncoder.encode("123456"))
+                .authorizedGrantTypes("password", "authorization_code", "refresh_token")
+                .authorities("READ_ONLY_CLIENT")
+                .scopes("read_profile_info")
+                .resourceIds("oauth2-resource")
+                .redirectUris("http://localhost:8080/login")
+                .accessTokenValiditySeconds(120)
+                .refreshTokenValiditySeconds(240000);
     }
 
-    public void configure(AuthorizationServerEndpointsConfigurer endPoint) throws Exception {
+
+    public void configure(AuthorizationServerEndpointsConfigurer endPoint) throws Exception{
         endPoint.authenticationManager(authenticationManager);
     }
 }

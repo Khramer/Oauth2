@@ -16,28 +16,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http
-//                .antMatcher("/**")
-//                .authorizeRequests()
-//                .antMatchers("/oauth/authorize**", "/login**", "/error**")
-//                .permitAll()
-//                .and()
-//                .authorizeRequests()
-//                .anyRequest().authenticated()
-//                .and()
-//                .httpBasic();
-//    }
-
     @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/v2/api-docs",
-                "/configuration/ui",
-                "/swagger-resources/**",
-                "/configuration/security",
-                "/swagger-ui.html",
-                "/webjars/**");
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .antMatcher("/**")
+                .authorizeRequests()
+                .antMatchers("/oauth/authorize**", "/login**", "/error**")
+                .permitAll()
+                .and()
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
     }
 
     @Override
